@@ -1,8 +1,9 @@
 import { fileURLToPath } from "node:url";
-import { defineNitroConfig } from "../../src/config";
+import { defineNitroConfig } from "nitro/config";
 
 export default defineNitroConfig({
   compressPublicAssets: true,
+  compatibilityDate: "2024-06-12",
   imports: {
     presets: [
       {
@@ -16,6 +17,8 @@ export default defineNitroConfig({
     {
       route: "/api/test/*/foo",
       handler: "~/api/hello.ts",
+      // @ts-expect-error #2382
+      method: "GET",
     },
   ],
   devProxy: {
@@ -90,7 +93,7 @@ export default defineNitroConfig({
     ignore: [
       // '/api/param/'
     ],
-    routes: ["/prerender", "/404"],
+    routes: ["/prerender", "/prerender-custom.html", "/404"],
   },
   experimental: {
     openAPI: true,
@@ -115,6 +118,7 @@ export default defineNitroConfig({
     },
   },
   openAPI: {
+    production: "prerender",
     meta: {
       title: "Nitro Test Fixture",
       description: "Nitro Test Fixture API",

@@ -1,5 +1,7 @@
+import { runtimeDir } from "nitro/runtime/meta";
+import type { Nitro, NitroEventHandler, NitroRouteRules } from "nitro/types";
 import { hash } from "ohash";
-import type { Nitro, NitroRouteRules, NitroEventHandler } from "../../types";
+import { join } from "pathe";
 import { virtual } from "./virtual";
 
 export function handlers(nitro: Nitro) {
@@ -27,12 +29,12 @@ export function handlers(nitro: Nitro) {
 
   return virtual(
     {
-      "#internal/nitro/virtual/server-handlers": () => {
+      "#nitro-internal-virtual/server-handlers": () => {
         const handlers = getHandlers();
         if (nitro.options.serveStatic) {
           handlers.unshift({
             middleware: true,
-            handler: "#internal/nitro/static",
+            handler: join(runtimeDir, "internal/static"),
           });
         }
         if (nitro.options.renderer) {
@@ -77,7 +79,7 @@ ${handlers
         h.handler,
         h.lazy
       )}, lazy: ${!!h.lazy}, middleware: ${!!h.middleware}, method: ${JSON.stringify(
-        h.method
+        h.method?.toLowerCase()
       )} }`
   )
   .join(",\n")}
@@ -85,7 +87,7 @@ ${handlers
   `.trim();
         return code;
       },
-      "#internal/nitro/virtual/server-handlers-meta": () => {
+      "#nitro-internal-virtual/server-handlers-meta": () => {
         const handlers = getHandlers();
         return /* js */ `
   ${handlers
@@ -97,7 +99,9 @@ export const handlersMeta = [
   ${handlers
     .map(
       (h) =>
-        /* js */ `{ route: ${JSON.stringify(h.route)}, method: ${JSON.stringify(h.method)}, meta: ${getImportId(h.handler)}Meta }`
+        /* js */ `{ route: ${JSON.stringify(h.route)}, method: ${JSON.stringify(
+          h.method?.toLowerCase()
+        )}, meta: ${getImportId(h.handler)}Meta }`
     )
     .join(",\n")}
   ];

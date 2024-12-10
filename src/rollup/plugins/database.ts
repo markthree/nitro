@@ -1,9 +1,20 @@
 import { connectors } from "db0";
+import type { Nitro } from "nitro/types";
 import { camelCase } from "scule";
-import type { Nitro } from "../../types";
 import { virtual } from "./virtual";
 
 export function database(nitro: Nitro) {
+  if (!nitro.options.experimental.database) {
+    return virtual(
+      {
+        "#nitro-internal-virtual/database": () => {
+          return /* js */ `export const connectionConfigs = {};`;
+        },
+      },
+      nitro.vfs
+    );
+  }
+
   const dbConfigs =
     (nitro.options.dev && nitro.options.devDatabase) || nitro.options.database;
 
@@ -21,9 +32,13 @@ export function database(nitro: Nitro) {
 
   return virtual(
     {
-      "#internal/nitro/virtual/database": () => {
+      "#nitro-internal-virtual/database": () => {
         return `
-${connectorsNames.map((name) => `import ${camelCase(name)}Connector from "${connectors[name]}";`).join("\n")}
+${connectorsNames
+  .map(
+    (name) => `import ${camelCase(name)}Connector from "${connectors[name]}";`
+  )
+  .join("\n")}
 
 export const connectionConfigs = {
   ${Object.entries(dbConfigs || {})

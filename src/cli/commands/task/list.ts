@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
-import { resolve } from "pathe";
 import { consola } from "consola";
-import { listTasks } from "../../../task";
+import { listTasks } from "nitro/core";
+import { resolve } from "pathe";
 
 export default defineCommand({
   meta: {
@@ -19,7 +19,9 @@ export default defineCommand({
     const tasks = await listTasks({ cwd, buildDir: ".nitro" });
     for (const [name, task] of Object.entries(tasks)) {
       consola.log(
-        ` - \`${name}\`${task.meta?.description ? ` - ${task.meta.description}` : ""}`
+        ` - \`${name}\`${
+          task.meta?.description ? ` - ${task.meta.description}` : ""
+        }`
       );
     }
   },
